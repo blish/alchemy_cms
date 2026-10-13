@@ -7,6 +7,10 @@ module Alchemy
             Alchemy.storage_adapter.preprocessor_class.new(attachable).call
           end
 
+          base.before_save if: -> { DragonflyCompat.enabled? } do
+            DragonflyCompat.assign_original_key(self, "image_file", prefix: DragonflyCompat::PICTURES_PREFIX)
+          end
+
           base.after_create_commit if: :svg? do
             SanitizeSvgJob.perform_later(self, file_accessor: :image_file)
           end
@@ -31,6 +35,11 @@ module Alchemy
       module AttachmentClassMethods
         def self.included(base)
           base.has_one_attached :file
+
+          base.before_save if: -> { DragonflyCompat.enabled? } do
+            DragonflyCompat.assign_original_key(self, "file", prefix: DragonflyCompat::ATTACHMENTS_PREFIX)
+          end
+
           base.after_create_commit if: :svg? do
             SanitizeSvgJob.perform_later(self, file_accessor: :file)
           end
@@ -51,7 +60,7 @@ module Alchemy
       extend self
 
       def attachment_url_class
-        AttachmentUrl
+        DragonflyCompat.enabled? ? DragonflyCompat::AttachmentUrl : AttachmentUrl
       end
 
       def preprocessor_class
@@ -59,7 +68,7 @@ module Alchemy
       end
 
       def picture_url_class
-        PictureUrl
+        DragonflyCompat.enabled? ? DragonflyCompat::PictureUrl : PictureUrl
       end
 
       def file_formats(class_name, scope:)

@@ -1,6 +1,30 @@
 require "rails_helper"
 
 RSpec.describe Alchemy::StorageAdapter::ActiveStorage, if: Alchemy.storage_adapter.active_storage? do
+  describe ".picture_url_class" do
+    subject { described_class.picture_url_class }
+
+    it { is_expected.to eq(Alchemy::StorageAdapter::ActiveStorage::PictureUrl) }
+
+    context "with active_storage_dragonfly_compat enabled" do
+      before { stub_alchemy_config(active_storage_dragonfly_compat: true) }
+
+      it { is_expected.to eq(Alchemy::StorageAdapter::ActiveStorage::DragonflyCompat::PictureUrl) }
+    end
+  end
+
+  describe ".attachment_url_class" do
+    subject { described_class.attachment_url_class }
+
+    it { is_expected.to eq(Alchemy::StorageAdapter::ActiveStorage::AttachmentUrl) }
+
+    context "with active_storage_dragonfly_compat enabled" do
+      before { stub_alchemy_config(active_storage_dragonfly_compat: true) }
+
+      it { is_expected.to eq(Alchemy::StorageAdapter::ActiveStorage::DragonflyCompat::AttachmentUrl) }
+    end
+  end
+
   describe ".file_formats" do
     subject(:file_formats) do
       described_class.file_formats(class_name, scope: scope)

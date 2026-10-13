@@ -256,6 +256,30 @@ module Alchemy
       #
       option :storage_adapter, :string, default: "active_storage"
 
+      # Make Active Storage behave like Alchemy's Dragonfly S3 setup did
+      #
+      # Opt-in for apps migrated from Dragonfly that want to keep their bucket
+      # layout and public URLs. Only has an effect with the +active_storage+
+      # storage adapter.
+      #
+      # - New originals are stored at Dragonfly style keys
+      #   (+pictures/2017/01/10/83ppgg6hyu_auge.jpg+, +attachments/...+)
+      # - Picture variants are stored at Dragonfly thumb style keys
+      #   (+pictures/:picture_id/:signature/auge.webp+)
+      # - Picture URLs and attachment URLs (not download URLs) point directly
+      #   at the bucket instead of the +/rails/active_storage+ redirect routes.
+      #   Missing variants are rendered while the page renders.
+      #
+      # Direct URLs need a service with +public: true+ in +config/storage.yml+.
+      # Otherwise Alchemy keeps using the redirect routes, because presigned
+      # URLs expire.
+      #
+      # == Example
+      #
+      #     # config/initializers/alchemy.rb
+      #     Alchemy.config.active_storage_dragonfly_compat = true
+      option :active_storage_dragonfly_compat, :boolean, default: false
+
       # Define page preview sources
       #
       # A preview source is a Ruby class returning an URL

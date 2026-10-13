@@ -135,6 +135,16 @@ module Alchemy
       end
     end
 
+    # Stores picture variants at Dragonfly thumb style keys
+    # if +Alchemy.config.active_storage_dragonfly_compat+ is enabled.
+    initializer "alchemy.active_storage_dragonfly_compat" do
+      ActiveSupport.on_load(:active_storage_variant_record) do
+        before_save do
+          Alchemy::StorageAdapter::ActiveStorage::DragonflyCompat.assign_variant_key(self)
+        end
+      end
+    end
+
     # Load Alchemy configuration from YAML files
     # in config/alchemy/config.yml and config/alchemy/#{Rails.env}.config.yml
     # if they exist.
